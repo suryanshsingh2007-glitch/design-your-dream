@@ -307,15 +307,18 @@ const Index = () => {
 
         {/* Tabs for Design vs Palette */}
         <Tabs defaultValue="design" className="animate-fade-in">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="design" className="gap-1.5">
-              <Sparkles className="w-4 h-4" /> Full Design
+          <TabsList className="w-full grid grid-cols-4">
+            <TabsTrigger value="design" className="gap-1.5 text-xs sm:text-sm">
+              <Sparkles className="w-4 h-4" /> <span className="hidden sm:inline">Full</span> Design
             </TabsTrigger>
-            <TabsTrigger value="palette" className="gap-1.5">
+            <TabsTrigger value="palette" className="gap-1.5 text-xs sm:text-sm">
               <Palette className="w-4 h-4" /> Colors
             </TabsTrigger>
-            <TabsTrigger value="furniture" className="gap-1.5">
+            <TabsTrigger value="furniture" className="gap-1.5 text-xs sm:text-sm">
               <Sofa className="w-4 h-4" /> Furniture
+            </TabsTrigger>
+            <TabsTrigger value="layout" className="gap-1.5 text-xs sm:text-sm">
+              <LayoutPanelTop className="w-4 h-4" /> Layout
             </TabsTrigger>
           </TabsList>
 
