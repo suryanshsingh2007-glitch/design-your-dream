@@ -227,7 +227,48 @@ const Index = () => {
     }
   };
 
-  return (
+  const handleRedesign = async () => {
+    if (!imageFile) {
+      toast({ title: "No image", description: "Please upload a room photo to redesign.", variant: "destructive" });
+      return;
+    }
+    if (!style) {
+      toast({ title: "Missing style", description: "Please select a design style.", variant: "destructive" });
+      return;
+    }
+    setRedesignLoading(true);
+    setRedesignImage(null);
+    try {
+      const image_base64 = await fileToBase64(imageFile);
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/redesign-room`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            image_base64,
+            style,
+            budget_range: budget || undefined,
+          }),
+        }
+      );
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || "Redesign failed");
+      }
+      const data = await resp.json();
+      setRedesignImage(data.image_url);
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setRedesignLoading(false);
+    }
+  };
+
+
     <div className="min-h-screen gradient-subtle">
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
