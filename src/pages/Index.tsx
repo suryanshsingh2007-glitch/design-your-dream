@@ -4,9 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Sparkles, Home } from "lucide-react";
+import { Loader2, Sparkles, Home, ScanEye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ImageUpload";
+import AnalysisDisplay, { type RoomAnalysis } from "@/components/AnalysisDisplay";
 import ResultsDisplay, { type DesignResult } from "@/components/ResultsDisplay";
 
 const ROOM_TYPES = ["Living Room", "Bedroom", "Kitchen", "Bathroom", "Study", "Dining Room", "Balcony", "Hall"];
@@ -19,7 +20,9 @@ const Index = () => {
   const [objects, setObjects] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState<RoomAnalysis | null>(null);
   const [result, setResult] = useState<DesignResult | null>(null);
   const { toast } = useToast();
 
@@ -34,7 +37,61 @@ const Index = () => {
       reader.readAsDataURL(file);
     });
 
-  const handleAnalyze = async () => {
+  const handleAnalyzeImage = async () => {
+    if (!imageFile) {
+      toast({ title: "No image", description: "Please upload a room photo first.", variant: "destructive" });
+      return;
+    }
+
+    setAnalyzing(true);
+    setAnalysis(null);
+
+    try {
+      const image_base64 = await fileToBase64(imageFile);
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-image`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ image_base64 }),
+        }
+      );
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || "Image analysis failed");
+      }
+
+      const data: RoomAnalysis = await resp.json();
+      setAnalysis(data);
+
+      // Auto-fill form fields from analysis
+      const matchedRoom = ROOM_TYPES.find(
+        (r) => r.toLowerCase() === data.room_type.toLowerCase()
+      );
+      if (matchedRoom) setRoomType(matchedRoom);
+
+      const matchedStyle = STYLES.find(
+        (s) => data.current_style.toLowerCase().includes(s.toLowerCase())
+      );
+      if (matchedStyle) setStyle(matchedStyle);
+
+      if (data.objects.length > 0) {
+        setObjects(data.objects.join(", "));
+      }
+
+      toast({ title: "Analysis complete", description: "Room details detected and form auto-filled." });
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const handleGetRecommendations = async () => {
     if (!roomType || !style || !budget) {
       toast({ title: "Missing fields", description: "Please fill in room type, style, and budget.", variant: "destructive" });
       return;
@@ -104,13 +161,40 @@ const Index = () => {
               onImageSelect={(file, preview) => {
                 setImageFile(file);
                 setImagePreview(preview);
+                setAnalysis(null);
               }}
               preview={imagePreview}
               onClear={() => {
                 setImageFile(null);
                 setImagePreview(null);
+                setAnalysis(null);
               }}
             />
+
+            {/* Analyze Image button */}
+            {imageFile && !analysis && (
+              <Button
+                onClick={handleAnalyzeImage}
+                disabled={analyzing}
+                variant="outline"
+                className="w-full h-11 text-sm font-medium border-primary/30 hover:bg-primary/5"
+              >
+                {analyzing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Analyzing image...
+                  </>
+                ) : (
+                  <>
+                    <ScanEye className="w-4 h-4" />
+                    Analyze Image First
+                  </>
+                )}
+              </Button>
+            )}
+
+            {/* Analysis results */}
+            {analysis && <AnalysisDisplay data={analysis} />}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -162,7 +246,7 @@ const Index = () => {
             </div>
 
             <Button
-              onClick={handleAnalyze}
+              onClick={handleGetRecommendations}
               disabled={loading}
               className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
               size="lg"
@@ -170,7 +254,7 @@ const Index = () => {
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Analyzing your space...
+                  Generating recommendations...
                 </>
               ) : (
                 <>
