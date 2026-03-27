@@ -11,7 +11,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { room_type, style, budget } = await req.json();
+    const { room_type, style, budget, persona, climate, city } = await req.json();
 
     if (!room_type || !style || !budget) {
       return new Response(
@@ -23,20 +23,29 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const profileLine = [
+      persona ? `User: ${persona}` : "",
+      climate ? `Climate: ${climate}` : "",
+      city ? `City: ${city}` : "",
+    ].filter(Boolean).join(", ");
+
     const systemPrompt = `You are an interior designer specializing in budget optimization for the Indian market.
 
 Suggest furniture for:
 - Room: ${room_type}
 - Style: ${style}
 - Budget: ₹${budget}
+${profileLine ? `- Profile: ${profileLine}` : ""}
 
 Rules:
-- Use realistic Indian market prices (from brands like IKEA India, Pepperfry, Urban Ladder, local carpenter rates)
+- Use realistic Indian market prices adjusted for ${city || "average Indian city"} (from IKEA India, Pepperfry, Urban Ladder, local carpenter rates)
 - Prioritize essential items first (high priority), then comfort items (medium), then decorative (low)
 - The total of high-priority items MUST fit within the budget
 - For each item, suggest 1-2 cheaper alternatives
 - Include placement guidance for each item
-- Price ranges should be realistic INR values`;
+- Price ranges should be realistic INR values for ${city || "the local market"}
+- Consider climate: ${climate || "general Indian climate"} — suggest materials accordingly (e.g. cane/bamboo for humid, upholstered for cold)
+- Tailor to ${persona || "general"} lifestyle needs`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",

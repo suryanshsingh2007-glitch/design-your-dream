@@ -11,7 +11,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { room_type, objects, dimensions } = await req.json();
+    const { room_type, objects, dimensions, persona, climate, city } = await req.json();
 
     if (!room_type) {
       return new Response(
@@ -23,12 +23,19 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const profileLine = [
+      persona ? `User: ${persona}` : "",
+      climate ? `Climate: ${climate}` : "",
+      city ? `City: ${city}` : "",
+    ].filter(Boolean).join(", ");
+
     const systemPrompt = `You are a space planning expert specializing in residential interiors.
 
 Given:
 - Room type: ${room_type}
 - Objects/furniture: ${objects || "standard furniture for this room type"}
 - Room dimensions: ${dimensions || "standard size"}
+${profileLine ? `- Profile: ${profileLine}` : ""}
 
 Task: Suggest optimal furniture placement.
 
@@ -38,7 +45,8 @@ Rules:
 - Keep it practical for real Indian homes (often compact spaces)
 - Consider door swing clearance and window access
 - Ensure natural traffic flow through the room
-- Position relative to walls, corners, windows, and doors`;
+- Position relative to walls, corners, windows, and doors
+- Consider ${climate || "local"} climate for ventilation and airflow needs`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
