@@ -472,6 +472,27 @@ const Index = () => {
             </Button>
             {layoutResult && <LayoutDisplay data={layoutResult} />}
           </TabsContent>
+
+          <TabsContent value="redesign" className="mt-4 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Upload a room photo above and select a style to generate a photorealistic redesign.
+            </p>
+            <Button
+              onClick={handleRedesign}
+              disabled={redesignLoading}
+              className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
+              size="lg"
+            >
+              {redesignLoading ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Redesigning room...</>
+              ) : (
+                <><ImageIcon className="w-5 h-5" /> Redesign My Room</>
+              )}
+            </Button>
+            {redesignImage && imagePreview && (
+              <RedesignDisplay originalImage={imagePreview} redesignedImage={redesignImage} />
+            )}
+          </TabsContent>
         </Tabs>
       </main>
     </div>
