@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, Home, ScanEye, Palette, Sofa, LayoutPanelTop } from "lucide-react";
+import { Loader2, Sparkles, Home, ScanEye, Palette, Sofa, LayoutPanelTop, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ImageUpload";
 import AnalysisDisplay, { type RoomAnalysis } from "@/components/AnalysisDisplay";
@@ -13,6 +13,7 @@ import ResultsDisplay, { type DesignResult } from "@/components/ResultsDisplay";
 import PaletteDisplay, { type PaletteResult } from "@/components/PaletteDisplay";
 import FurnitureDisplay, { type FurnitureResult } from "@/components/FurnitureDisplay";
 import LayoutDisplay, { type LayoutResult } from "@/components/LayoutDisplay";
+import RedesignDisplay from "@/components/RedesignDisplay";
 
 const ROOM_TYPES = ["Living Room", "Bedroom", "Kitchen", "Bathroom", "Study", "Dining Room", "Balcony", "Hall"];
 const STYLES = ["Modern", "Minimal", "Luxury", "Scandinavian", "Industrial", "Bohemian", "Traditional Indian", "Contemporary"];
@@ -38,6 +39,8 @@ const Index = () => {
   const [paletteResult, setPaletteResult] = useState<PaletteResult | null>(null);
   const [furnitureResult, setFurnitureResult] = useState<FurnitureResult | null>(null);
   const [layoutResult, setLayoutResult] = useState<LayoutResult | null>(null);
+  const [redesignLoading, setRedesignLoading] = useState(false);
+  const [redesignImage, setRedesignImage] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState("");
   const { toast } = useToast();
 
