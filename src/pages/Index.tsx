@@ -189,6 +189,41 @@ const Index = () => {
     }
   };
 
+  const handleGetLayout = async () => {
+    if (!roomType) {
+      toast({ title: "Missing fields", description: "Please select a room type.", variant: "destructive" });
+      return;
+    }
+    setLayoutLoading(true);
+    setLayoutResult(null);
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/plan-layout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            room_type: roomType,
+            objects: objects || undefined,
+            dimensions: dimensions || undefined,
+          }),
+        }
+      );
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || "Layout planning failed");
+      }
+      setLayoutResult(await resp.json());
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setLayoutLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen gradient-subtle">
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
