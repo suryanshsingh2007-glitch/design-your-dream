@@ -352,18 +352,21 @@ const Index = () => {
 
         {/* Tabs for Design vs Palette */}
         <Tabs defaultValue="design" className="animate-fade-in">
-          <TabsList className="w-full grid grid-cols-4">
-            <TabsTrigger value="design" className="gap-1.5 text-xs sm:text-sm">
-              <Sparkles className="w-4 h-4" /> <span className="hidden sm:inline">Full</span> Design
+          <TabsList className="w-full grid grid-cols-5">
+            <TabsTrigger value="design" className="gap-1 text-xs sm:text-sm">
+              <Sparkles className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Design</span>
             </TabsTrigger>
-            <TabsTrigger value="palette" className="gap-1.5 text-xs sm:text-sm">
-              <Palette className="w-4 h-4" /> Colors
+            <TabsTrigger value="palette" className="gap-1 text-xs sm:text-sm">
+              <Palette className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Colors</span>
             </TabsTrigger>
-            <TabsTrigger value="furniture" className="gap-1.5 text-xs sm:text-sm">
-              <Sofa className="w-4 h-4" /> Furniture
+            <TabsTrigger value="furniture" className="gap-1 text-xs sm:text-sm">
+              <Sofa className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Furniture</span>
             </TabsTrigger>
-            <TabsTrigger value="layout" className="gap-1.5 text-xs sm:text-sm">
-              <LayoutPanelTop className="w-4 h-4" /> Layout
+            <TabsTrigger value="layout" className="gap-1 text-xs sm:text-sm">
+              <LayoutPanelTop className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Layout</span>
+            </TabsTrigger>
+            <TabsTrigger value="redesign" className="gap-1 text-xs sm:text-sm">
+              <ImageIcon className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Redesign</span>
             </TabsTrigger>
           </TabsList>
 
