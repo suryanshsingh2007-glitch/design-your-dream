@@ -285,167 +285,185 @@ const Index = () => {
 
 
   return (
-    <div className="min-h-screen gradient-subtle">
-      <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="p-2 rounded-lg gradient-warm">
+    <div className="min-h-screen gradient-hero">
+      {/* Header */}
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-md sticky top-0 z-10">
+        <div className="container max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center gap-3">
+          <div className="p-2 rounded-lg gradient-warm shadow-sm">
             <Home className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-display font-bold text-foreground tracking-tight">Interior AI</h1>
-            <p className="text-xs text-muted-foreground">Smart design recommendations for your space</p>
+            <h1 className="text-lg font-display text-foreground">Interior AI</h1>
+            <p className="text-[11px] text-muted-foreground tracking-wide uppercase">Design · Plan · Redesign</p>
           </div>
         </div>
       </header>
 
-      <main className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* Image Upload (shared) */}
-        <Card className="shadow-soft border-border/60 animate-fade-in">
-          <CardContent className="p-6 space-y-6">
-            <ImageUpload
-              onImageSelect={(file, preview) => {
-                setImageFile(file);
-                setImagePreview(preview);
-                setAnalysis(null);
-              }}
-              preview={imagePreview}
-              onClear={() => {
-                setImageFile(null);
-                setImagePreview(null);
-                setAnalysis(null);
-              }}
-            />
+      <main className="container max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        {/* Upload + Form */}
+        <Card className="shadow-elevated border-border/40 animate-fade-in overflow-hidden">
+          <CardContent className="p-0">
+            {/* Image section */}
+            <div className="p-5 sm:p-6 border-b border-border/40 bg-muted/20">
+              <ImageUpload
+                onImageSelect={(file, preview) => {
+                  setImageFile(file);
+                  setImagePreview(preview);
+                  setAnalysis(null);
+                }}
+                preview={imagePreview}
+                onClear={() => {
+                  setImageFile(null);
+                  setImagePreview(null);
+                  setAnalysis(null);
+                }}
+              />
 
-            {imageFile && !analysis && (
-              <Button
-                onClick={handleAnalyzeImage}
-                disabled={analyzing}
-                variant="outline"
-                className="w-full h-11 text-sm font-medium border-primary/30 hover:bg-primary/5"
-              >
-                {analyzing ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing image...</>
-                ) : (
-                  <><ScanEye className="w-4 h-4" /> Analyze Image First</>
-                )}
-              </Button>
-            )}
+              {imageFile && !analysis && (
+                <Button
+                  onClick={handleAnalyzeImage}
+                  disabled={analyzing}
+                  variant="outline"
+                  className="w-full mt-4 h-10 text-sm font-medium border-primary/25 hover:bg-primary/5"
+                >
+                  {analyzing ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing image...</>
+                  ) : (
+                    <><ScanEye className="w-4 h-4" /> Detect Room Details</>
+                  )}
+                </Button>
+              )}
 
-            {analysis && <AnalysisDisplay data={analysis} />}
+              {analysis && <div className="mt-4"><AnalysisDisplay data={analysis} /></div>}
+            </div>
 
-            {/* Shared inputs: room type, style, budget */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-foreground font-medium">Room Type</Label>
-                <Select value={roomType} onValueChange={setRoomType}>
-                  <SelectTrigger><SelectValue placeholder="Select room type" /></SelectTrigger>
-                  <SelectContent>
-                    {ROOM_TYPES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+            {/* Form fields */}
+            <div className="p-5 sm:p-6 space-y-5">
+              {/* Room basics */}
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Room Details</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-foreground text-sm">Room Type</Label>
+                    <Select value={roomType} onValueChange={setRoomType}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent>
+                        {ROOM_TYPES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-foreground text-sm">Style</Label>
+                    <Select value={style} onValueChange={setStyle}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Select style" /></SelectTrigger>
+                      <SelectContent>
+                        {STYLES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-foreground text-sm">Budget (₹)</Label>
+                    <Input className="h-10" type="number" placeholder="e.g. 50000" value={budget} onChange={(e) => setBudget(e.target.value)} />
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-foreground font-medium">Design Style</Label>
-                <Select value={style} onValueChange={setStyle}>
-                  <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
-                  <SelectContent>
-                    {STYLES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+
+              {/* Profile */}
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your Profile</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-foreground text-sm">Who's it for?</Label>
+                    <Select value={persona} onValueChange={setPersona}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Select persona" /></SelectTrigger>
+                      <SelectContent>
+                        {PERSONAS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-foreground text-sm">Climate</Label>
+                    <Select value={climate} onValueChange={setClimate}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Select climate" /></SelectTrigger>
+                      <SelectContent>
+                        {CLIMATES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-foreground text-sm">City</Label>
+                    <Select value={city} onValueChange={setCity}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Select city" /></SelectTrigger>
+                      <SelectContent>
+                        {CITIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-foreground font-medium">Budget (₹)</Label>
-                <Input type="number" placeholder="e.g. 50000" value={budget} onChange={(e) => setBudget(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-foreground font-medium">Objects in Room</Label>
-                <Input placeholder="e.g. sofa, table, TV" value={objects} onChange={(e) => setObjects(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-foreground font-medium">Who's it for?</Label>
-                <Select value={persona} onValueChange={setPersona}>
-                  <SelectTrigger><SelectValue placeholder="Select persona" /></SelectTrigger>
-                  <SelectContent>
-                    {PERSONAS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-foreground font-medium">Climate</Label>
-                <Select value={climate} onValueChange={setClimate}>
-                  <SelectTrigger><SelectValue placeholder="Select climate" /></SelectTrigger>
-                  <SelectContent>
-                    {CLIMATES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-foreground font-medium">City</Label>
-                <Select value={city} onValueChange={setCity}>
-                  <SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger>
-                  <SelectContent>
-                    {CITIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+
+              {/* Optional */}
+              <div className="space-y-1.5">
+                <Label className="text-foreground text-sm">Existing Objects <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                <Input className="h-10" placeholder="e.g. sofa, table, TV" value={objects} onChange={(e) => setObjects(e.target.value)} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Tabs for Design vs Palette */}
+        {/* Tabs */}
         <Tabs defaultValue="design" className="animate-fade-in">
-          <TabsList className="w-full grid grid-cols-5">
-            <TabsTrigger value="design" className="gap-1 text-xs sm:text-sm">
+          <TabsList className="w-full grid grid-cols-5 h-11 bg-card shadow-card border border-border/40">
+            <TabsTrigger value="design" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Sparkles className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Design</span>
             </TabsTrigger>
-            <TabsTrigger value="palette" className="gap-1 text-xs sm:text-sm">
+            <TabsTrigger value="palette" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Palette className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Colors</span>
             </TabsTrigger>
-            <TabsTrigger value="furniture" className="gap-1 text-xs sm:text-sm">
+            <TabsTrigger value="furniture" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Sofa className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Furniture</span>
             </TabsTrigger>
-            <TabsTrigger value="layout" className="gap-1 text-xs sm:text-sm">
+            <TabsTrigger value="layout" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <LayoutPanelTop className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Layout</span>
             </TabsTrigger>
-            <TabsTrigger value="redesign" className="gap-1 text-xs sm:text-sm">
+            <TabsTrigger value="redesign" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <ImageIcon className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Redesign</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="design" className="mt-4 space-y-6">
+          <TabsContent value="design" className="mt-5 space-y-4">
             <Button
               onClick={handleGetRecommendations}
               disabled={loading}
-              className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
+              className="w-full h-12 text-sm font-semibold gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity shadow-sm"
               size="lg"
             >
               {loading ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Generating recommendations...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> Generating recommendations...</>
               ) : (
-                <><Sparkles className="w-5 h-5" /> Get Design Recommendations</>
+                <><Sparkles className="w-4 h-4" /> Get Design Recommendations</>
               )}
             </Button>
             {result && <ResultsDisplay data={result} />}
           </TabsContent>
 
-          <TabsContent value="palette" className="mt-4 space-y-4">
-            {/* Extra palette inputs */}
-            <Card className="shadow-soft border-border/60">
+          <TabsContent value="palette" className="mt-5 space-y-4">
+            <Card className="shadow-card border-border/40">
               <CardContent className="p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-foreground font-medium">Lighting Condition</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-foreground text-sm">Lighting</Label>
                     <Select value={lighting} onValueChange={setLighting}>
-                      <SelectTrigger><SelectValue placeholder="Select lighting" /></SelectTrigger>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Select lighting" /></SelectTrigger>
                       <SelectContent>
                         {LIGHTING.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-foreground font-medium">Room Size</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-foreground text-sm">Room Size</Label>
                     <Select value={size} onValueChange={setSize}>
-                      <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Select size" /></SelectTrigger>
                       <SelectContent>
                         {SIZES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
@@ -454,81 +472,75 @@ const Index = () => {
                 </div>
               </CardContent>
             </Card>
-
             <Button
               onClick={handleGetPalette}
               disabled={paletteLoading}
-              className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
+              className="w-full h-12 text-sm font-semibold gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity shadow-sm"
               size="lg"
             >
               {paletteLoading ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Generating palette...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> Generating palette...</>
               ) : (
-                <><Palette className="w-5 h-5" /> Get Color Palette</>
+                <><Palette className="w-4 h-4" /> Get Color Palette</>
               )}
             </Button>
             {paletteResult && <PaletteDisplay data={paletteResult} />}
           </TabsContent>
 
-          <TabsContent value="furniture" className="mt-4 space-y-4">
+          <TabsContent value="furniture" className="mt-5 space-y-4">
             <Button
               onClick={handleGetFurniture}
               disabled={furnitureLoading}
-              className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
+              className="w-full h-12 text-sm font-semibold gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity shadow-sm"
               size="lg"
             >
               {furnitureLoading ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Finding furniture...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> Finding furniture...</>
               ) : (
-                <><Sofa className="w-5 h-5" /> Get Furniture Suggestions</>
+                <><Sofa className="w-4 h-4" /> Get Furniture Suggestions</>
               )}
             </Button>
             {furnitureResult && <FurnitureDisplay data={furnitureResult} />}
           </TabsContent>
 
-          <TabsContent value="layout" className="mt-4 space-y-4">
-            <Card className="shadow-soft border-border/60">
+          <TabsContent value="layout" className="mt-5 space-y-4">
+            <Card className="shadow-card border-border/40">
               <CardContent className="p-4">
-                <div className="space-y-2">
-                  <Label className="text-foreground font-medium">Room Dimensions (optional)</Label>
-                  <Input
-                    placeholder="e.g. 12ft × 10ft"
-                    value={dimensions}
-                    onChange={(e) => setDimensions(e.target.value)}
-                  />
+                <div className="space-y-1.5">
+                  <Label className="text-foreground text-sm">Room Dimensions <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                  <Input className="h-10" placeholder="e.g. 12ft × 10ft" value={dimensions} onChange={(e) => setDimensions(e.target.value)} />
                 </div>
               </CardContent>
             </Card>
-
             <Button
               onClick={handleGetLayout}
               disabled={layoutLoading}
-              className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
+              className="w-full h-12 text-sm font-semibold gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity shadow-sm"
               size="lg"
             >
               {layoutLoading ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Planning layout...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> Planning layout...</>
               ) : (
-                <><LayoutPanelTop className="w-5 h-5" /> Get Placement Plan</>
+                <><LayoutPanelTop className="w-4 h-4" /> Get Placement Plan</>
               )}
             </Button>
             {layoutResult && <LayoutDisplay data={layoutResult} />}
           </TabsContent>
 
-          <TabsContent value="redesign" className="mt-4 space-y-4">
+          <TabsContent value="redesign" className="mt-5 space-y-4">
             <p className="text-sm text-muted-foreground">
-              Upload a room photo above and select a style to generate a photorealistic redesign.
+              Upload a room photo and select a style to generate a photorealistic redesign.
             </p>
             <Button
               onClick={handleRedesign}
               disabled={redesignLoading}
-              className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
+              className="w-full h-12 text-sm font-semibold gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity shadow-sm"
               size="lg"
             >
               {redesignLoading ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Redesigning room...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> Redesigning room...</>
               ) : (
-                <><ImageIcon className="w-5 h-5" /> Redesign My Room</>
+                <><ImageIcon className="w-4 h-4" /> Redesign My Room</>
               )}
             </Button>
             {redesignImage && imagePreview && (
