@@ -30,9 +30,11 @@ const Index = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [paletteLoading, setPaletteLoading] = useState(false);
+  const [furnitureLoading, setFurnitureLoading] = useState(false);
   const [analysis, setAnalysis] = useState<RoomAnalysis | null>(null);
   const [result, setResult] = useState<DesignResult | null>(null);
   const [paletteResult, setPaletteResult] = useState<PaletteResult | null>(null);
+  const [furnitureResult, setFurnitureResult] = useState<FurnitureResult | null>(null);
   const { toast } = useToast();
 
   const fileToBase64 = (file: File): Promise<string> =>
