@@ -11,9 +11,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { room_type, objects, budget, style, image_base64 } = await req.json();
+    const { room_type, objects, budget, style, image_base64, persona, climate, city } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const profileLine = [
+      persona ? `User profile: ${persona}` : "",
+      climate ? `Climate: ${climate}` : "",
+      city ? `City: ${city} (adjust prices for local market)` : "",
+    ].filter(Boolean).join("\n- ");
 
     const systemPrompt = `You are a professional interior designer and space planning expert.
 Analyze the given interior image and generate practical, budget-aware design recommendations.
@@ -23,17 +29,20 @@ Analyze the given interior image and generate practical, budget-aware design rec
 - Detected objects: ${objects || "Not specified"}
 - User budget: ₹${budget}
 - Preferred style: ${style}
+${profileLine ? `- ${profileLine}` : ""}
 
 ### TASK:
-Provide complete interior design guidance.
+Provide complete interior design guidance personalized to the user's profile, climate, and local market.
 
 ### REQUIREMENTS:
 1. Suggest a suitable color palette (with HEX codes).
-2. Recommend furniture items (with estimated prices in INR).
+2. Recommend furniture items (with estimated prices in INR adjusted for city).
 3. Suggest exact placement of furniture (spatial arrangement).
 4. Optimize everything within the given budget.
 5. Keep suggestions realistic and purchasable in India.
-6. Prioritize space efficiency and aesthetics.`;
+6. Prioritize space efficiency and aesthetics.
+7. Consider climate when suggesting materials (e.g. avoid heavy fabrics in hot/humid areas).
+8. Tailor recommendations to the user persona (e.g. student = compact, budget-friendly).`;
 
     const messages: any[] = [
       { role: "system", content: systemPrompt },

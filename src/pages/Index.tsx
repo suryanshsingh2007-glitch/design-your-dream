@@ -19,6 +19,9 @@ const ROOM_TYPES = ["Living Room", "Bedroom", "Kitchen", "Bathroom", "Study", "D
 const STYLES = ["Modern", "Minimal", "Luxury", "Scandinavian", "Industrial", "Bohemian", "Traditional Indian", "Contemporary"];
 const LIGHTING = ["Bright Natural Light", "Low Natural Light", "Mostly Artificial", "Mixed Lighting"];
 const SIZES = ["Small (< 100 sq ft)", "Medium (100–200 sq ft)", "Large (200–400 sq ft)", "Very Large (400+ sq ft)"];
+const PERSONAS = ["Student", "Bachelor", "Young Couple", "Family with Kids", "Senior Citizen", "Working Professional"];
+const CLIMATES = ["Hot & Humid (Mumbai, Chennai)", "Hot & Dry (Delhi, Jaipur)", "Cold (Shimla, Darjeeling)", "Moderate (Bangalore, Pune)", "Coastal (Goa, Kochi)"];
+const CITIES = ["Mumbai", "Delhi NCR", "Bangalore", "Chennai", "Hyderabad", "Pune", "Kolkata", "Ahmedabad", "Jaipur", "Lucknow", "Tier-2 City", "Tier-3 City"];
 
 const Index = () => {
   const [roomType, setRoomType] = useState("");
@@ -27,6 +30,9 @@ const Index = () => {
   const [objects, setObjects] = useState("");
   const [lighting, setLighting] = useState("");
   const [size, setSize] = useState("");
+  const [persona, setPersona] = useState("");
+  const [climate, setClimate] = useState("");
+  const [city, setCity] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -43,6 +49,12 @@ const Index = () => {
   const [redesignImage, setRedesignImage] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState("");
   const { toast } = useToast();
+
+  const profileContext = {
+    persona: persona || undefined,
+    climate: climate || undefined,
+    city: city || undefined,
+  };
 
   const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -109,7 +121,7 @@ const Index = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ room_type: roomType, style, budget, objects: objects || undefined, image_base64 }),
+          body: JSON.stringify({ room_type: roomType, style, budget, objects: objects || undefined, image_base64, ...profileContext }),
         }
       );
       if (!resp.ok) {
@@ -146,6 +158,7 @@ const Index = () => {
             budget: budget || undefined,
             lighting: lighting || undefined,
             size: size || undefined,
+            ...profileContext,
           }),
         }
       );
@@ -177,7 +190,7 @@ const Index = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ room_type: roomType, style, budget }),
+          body: JSON.stringify({ room_type: roomType, style, budget, ...profileContext }),
         }
       );
       if (!resp.ok) {
@@ -212,6 +225,7 @@ const Index = () => {
             room_type: roomType,
             objects: objects || undefined,
             dimensions: dimensions || undefined,
+            ...profileContext,
           }),
         }
       );
@@ -252,6 +266,7 @@ const Index = () => {
             image_base64,
             style,
             budget_range: budget || undefined,
+            ...profileContext,
           }),
         }
       );
@@ -345,6 +360,33 @@ const Index = () => {
               <div className="space-y-2">
                 <Label className="text-foreground font-medium">Objects in Room</Label>
                 <Input placeholder="e.g. sofa, table, TV" value={objects} onChange={(e) => setObjects(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground font-medium">Who's it for?</Label>
+                <Select value={persona} onValueChange={setPersona}>
+                  <SelectTrigger><SelectValue placeholder="Select persona" /></SelectTrigger>
+                  <SelectContent>
+                    {PERSONAS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground font-medium">Climate</Label>
+                <Select value={climate} onValueChange={setClimate}>
+                  <SelectTrigger><SelectValue placeholder="Select climate" /></SelectTrigger>
+                  <SelectContent>
+                    {CLIMATES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground font-medium">City</Label>
+                <Select value={city} onValueChange={setCity}>
+                  <SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger>
+                  <SelectContent>
+                    {CITIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
