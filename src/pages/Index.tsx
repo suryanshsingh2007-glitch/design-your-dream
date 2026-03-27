@@ -5,12 +5,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, Home, ScanEye, Palette } from "lucide-react";
+import { Loader2, Sparkles, Home, ScanEye, Palette, Sofa } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ImageUpload";
 import AnalysisDisplay, { type RoomAnalysis } from "@/components/AnalysisDisplay";
 import ResultsDisplay, { type DesignResult } from "@/components/ResultsDisplay";
 import PaletteDisplay, { type PaletteResult } from "@/components/PaletteDisplay";
+import FurnitureDisplay, { type FurnitureResult } from "@/components/FurnitureDisplay";
 
 const ROOM_TYPES = ["Living Room", "Bedroom", "Kitchen", "Bathroom", "Study", "Dining Room", "Balcony", "Hall"];
 const STYLES = ["Modern", "Minimal", "Luxury", "Scandinavian", "Industrial", "Bohemian", "Traditional Indian", "Contemporary"];
@@ -29,9 +30,11 @@ const Index = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [paletteLoading, setPaletteLoading] = useState(false);
+  const [furnitureLoading, setFurnitureLoading] = useState(false);
   const [analysis, setAnalysis] = useState<RoomAnalysis | null>(null);
   const [result, setResult] = useState<DesignResult | null>(null);
   const [paletteResult, setPaletteResult] = useState<PaletteResult | null>(null);
+  const [furnitureResult, setFurnitureResult] = useState<FurnitureResult | null>(null);
   const { toast } = useToast();
 
   const fileToBase64 = (file: File): Promise<string> =>
@@ -151,6 +154,37 @@ const Index = () => {
     }
   };
 
+  const handleGetFurniture = async () => {
+    if (!roomType || !style || !budget) {
+      toast({ title: "Missing fields", description: "Please fill in room type, style, and budget.", variant: "destructive" });
+      return;
+    }
+    setFurnitureLoading(true);
+    setFurnitureResult(null);
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suggest-furniture`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ room_type: roomType, style, budget }),
+        }
+      );
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || "Furniture suggestion failed");
+      }
+      setFurnitureResult(await resp.json());
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setFurnitureLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen gradient-subtle">
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
@@ -234,12 +268,15 @@ const Index = () => {
 
         {/* Tabs for Design vs Palette */}
         <Tabs defaultValue="design" className="animate-fade-in">
-          <TabsList className="w-full grid grid-cols-2">
+          <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="design" className="gap-1.5">
               <Sparkles className="w-4 h-4" /> Full Design
             </TabsTrigger>
             <TabsTrigger value="palette" className="gap-1.5">
-              <Palette className="w-4 h-4" /> Color Palette
+              <Palette className="w-4 h-4" /> Colors
+            </TabsTrigger>
+            <TabsTrigger value="furniture" className="gap-1.5">
+              <Sofa className="w-4 h-4" /> Furniture
             </TabsTrigger>
           </TabsList>
 
@@ -299,6 +336,22 @@ const Index = () => {
               )}
             </Button>
             {paletteResult && <PaletteDisplay data={paletteResult} />}
+          </TabsContent>
+
+          <TabsContent value="furniture" className="mt-4 space-y-4">
+            <Button
+              onClick={handleGetFurniture}
+              disabled={furnitureLoading}
+              className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
+              size="lg"
+            >
+              {furnitureLoading ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Finding furniture...</>
+              ) : (
+                <><Sofa className="w-5 h-5" /> Get Furniture Suggestions</>
+              )}
+            </Button>
+            {furnitureResult && <FurnitureDisplay data={furnitureResult} />}
           </TabsContent>
         </Tabs>
       </main>
