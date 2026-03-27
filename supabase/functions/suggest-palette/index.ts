@@ -11,7 +11,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { room_type, style, budget, lighting, size } = await req.json();
+    const { room_type, style, budget, lighting, size, persona, climate, city } = await req.json();
 
     if (!room_type || !style) {
       return new Response(
@@ -23,6 +23,12 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const profileLine = [
+      persona ? `User: ${persona}` : "",
+      climate ? `Climate: ${climate}` : "",
+      city ? `City: ${city}` : "",
+    ].filter(Boolean).join(", ");
+
     const systemPrompt = `You are a color psychology and interior design expert.
 Suggest a color palette for a ${room_type} with ${style} style.
 
@@ -30,6 +36,7 @@ Constraints:
 - Budget: ₹${budget || "flexible"}
 - Lighting condition: ${lighting || "natural light"}
 - Room size: ${size || "medium"}
+${profileLine ? `- Profile: ${profileLine}` : ""}
 
 Requirements:
 - Provide exactly 5 colors with HEX codes
@@ -37,6 +44,7 @@ Requirements:
 - Suggest where to apply each color (walls, ceiling, furniture, accents, decor)
 - Consider the lighting condition when choosing tones (darker rooms need lighter/warmer tones)
 - Consider room size (small rooms benefit from lighter palettes, large rooms can handle bolder colors)
+- Consider climate (cool tones for hot climates, warm tones for cold climates)
 - Keep paint/material costs realistic for the Indian market within the given budget`;
 
     const response = await fetch(
