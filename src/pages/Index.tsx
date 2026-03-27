@@ -5,12 +5,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, Home, ScanEye, Palette } from "lucide-react";
+import { Loader2, Sparkles, Home, ScanEye, Palette, Sofa } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ImageUpload";
 import AnalysisDisplay, { type RoomAnalysis } from "@/components/AnalysisDisplay";
 import ResultsDisplay, { type DesignResult } from "@/components/ResultsDisplay";
 import PaletteDisplay, { type PaletteResult } from "@/components/PaletteDisplay";
+import FurnitureDisplay, { type FurnitureResult } from "@/components/FurnitureDisplay";
 
 const ROOM_TYPES = ["Living Room", "Bedroom", "Kitchen", "Bathroom", "Study", "Dining Room", "Balcony", "Hall"];
 const STYLES = ["Modern", "Minimal", "Luxury", "Scandinavian", "Industrial", "Bohemian", "Traditional Indian", "Contemporary"];
