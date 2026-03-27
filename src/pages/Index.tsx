@@ -50,7 +50,12 @@ const Index = () => {
   const [dimensions, setDimensions] = useState("");
   const { toast } = useToast();
 
-  const fileToBase64 = (file: File): Promise<string> =>
+  const profileContext = {
+    persona: persona || undefined,
+    climate: climate || undefined,
+    city: city || undefined,
+  };
+
     new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve((reader.result as string).split(",")[1]);
