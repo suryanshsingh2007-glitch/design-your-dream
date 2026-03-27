@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, Home, ScanEye, Palette, Sofa, LayoutPanelTop } from "lucide-react";
+import { Loader2, Sparkles, Home, ScanEye, Palette, Sofa, LayoutPanelTop, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ImageUpload";
 import AnalysisDisplay, { type RoomAnalysis } from "@/components/AnalysisDisplay";
@@ -13,6 +13,7 @@ import ResultsDisplay, { type DesignResult } from "@/components/ResultsDisplay";
 import PaletteDisplay, { type PaletteResult } from "@/components/PaletteDisplay";
 import FurnitureDisplay, { type FurnitureResult } from "@/components/FurnitureDisplay";
 import LayoutDisplay, { type LayoutResult } from "@/components/LayoutDisplay";
+import RedesignDisplay from "@/components/RedesignDisplay";
 
 const ROOM_TYPES = ["Living Room", "Bedroom", "Kitchen", "Bathroom", "Study", "Dining Room", "Balcony", "Hall"];
 const STYLES = ["Modern", "Minimal", "Luxury", "Scandinavian", "Industrial", "Bohemian", "Traditional Indian", "Contemporary"];
@@ -38,6 +39,8 @@ const Index = () => {
   const [paletteResult, setPaletteResult] = useState<PaletteResult | null>(null);
   const [furnitureResult, setFurnitureResult] = useState<FurnitureResult | null>(null);
   const [layoutResult, setLayoutResult] = useState<LayoutResult | null>(null);
+  const [redesignLoading, setRedesignLoading] = useState(false);
+  const [redesignImage, setRedesignImage] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState("");
   const { toast } = useToast();
 
@@ -224,6 +227,48 @@ const Index = () => {
     }
   };
 
+  const handleRedesign = async () => {
+    if (!imageFile) {
+      toast({ title: "No image", description: "Please upload a room photo to redesign.", variant: "destructive" });
+      return;
+    }
+    if (!style) {
+      toast({ title: "Missing style", description: "Please select a design style.", variant: "destructive" });
+      return;
+    }
+    setRedesignLoading(true);
+    setRedesignImage(null);
+    try {
+      const image_base64 = await fileToBase64(imageFile);
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/redesign-room`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            image_base64,
+            style,
+            budget_range: budget || undefined,
+          }),
+        }
+      );
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || "Redesign failed");
+      }
+      const data = await resp.json();
+      setRedesignImage(data.image_url);
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setRedesignLoading(false);
+    }
+  };
+
+
   return (
     <div className="min-h-screen gradient-subtle">
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
@@ -307,18 +352,21 @@ const Index = () => {
 
         {/* Tabs for Design vs Palette */}
         <Tabs defaultValue="design" className="animate-fade-in">
-          <TabsList className="w-full grid grid-cols-4">
-            <TabsTrigger value="design" className="gap-1.5 text-xs sm:text-sm">
-              <Sparkles className="w-4 h-4" /> <span className="hidden sm:inline">Full</span> Design
+          <TabsList className="w-full grid grid-cols-5">
+            <TabsTrigger value="design" className="gap-1 text-xs sm:text-sm">
+              <Sparkles className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Design</span>
             </TabsTrigger>
-            <TabsTrigger value="palette" className="gap-1.5 text-xs sm:text-sm">
-              <Palette className="w-4 h-4" /> Colors
+            <TabsTrigger value="palette" className="gap-1 text-xs sm:text-sm">
+              <Palette className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Colors</span>
             </TabsTrigger>
-            <TabsTrigger value="furniture" className="gap-1.5 text-xs sm:text-sm">
-              <Sofa className="w-4 h-4" /> Furniture
+            <TabsTrigger value="furniture" className="gap-1 text-xs sm:text-sm">
+              <Sofa className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Furniture</span>
             </TabsTrigger>
-            <TabsTrigger value="layout" className="gap-1.5 text-xs sm:text-sm">
-              <LayoutPanelTop className="w-4 h-4" /> Layout
+            <TabsTrigger value="layout" className="gap-1 text-xs sm:text-sm">
+              <LayoutPanelTop className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Layout</span>
+            </TabsTrigger>
+            <TabsTrigger value="redesign" className="gap-1 text-xs sm:text-sm">
+              <ImageIcon className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Redesign</span>
             </TabsTrigger>
           </TabsList>
 
@@ -423,6 +471,27 @@ const Index = () => {
               )}
             </Button>
             {layoutResult && <LayoutDisplay data={layoutResult} />}
+          </TabsContent>
+
+          <TabsContent value="redesign" className="mt-4 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Upload a room photo above and select a style to generate a photorealistic redesign.
+            </p>
+            <Button
+              onClick={handleRedesign}
+              disabled={redesignLoading}
+              className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
+              size="lg"
+            >
+              {redesignLoading ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Redesigning room...</>
+              ) : (
+                <><ImageIcon className="w-5 h-5" /> Redesign My Room</>
+              )}
+            </Button>
+            {redesignImage && imagePreview && (
+              <RedesignDisplay originalImage={imagePreview} redesignedImage={redesignImage} />
+            )}
           </TabsContent>
         </Tabs>
       </main>
