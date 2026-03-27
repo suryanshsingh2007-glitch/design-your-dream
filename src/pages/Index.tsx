@@ -4,35 +4,40 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Sparkles, Home, ScanEye } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Sparkles, Home, ScanEye, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ImageUpload";
 import AnalysisDisplay, { type RoomAnalysis } from "@/components/AnalysisDisplay";
 import ResultsDisplay, { type DesignResult } from "@/components/ResultsDisplay";
+import PaletteDisplay, { type PaletteResult } from "@/components/PaletteDisplay";
 
 const ROOM_TYPES = ["Living Room", "Bedroom", "Kitchen", "Bathroom", "Study", "Dining Room", "Balcony", "Hall"];
 const STYLES = ["Modern", "Minimal", "Luxury", "Scandinavian", "Industrial", "Bohemian", "Traditional Indian", "Contemporary"];
+const LIGHTING = ["Bright Natural Light", "Low Natural Light", "Mostly Artificial", "Mixed Lighting"];
+const SIZES = ["Small (< 100 sq ft)", "Medium (100–200 sq ft)", "Large (200–400 sq ft)", "Very Large (400+ sq ft)"];
 
 const Index = () => {
   const [roomType, setRoomType] = useState("");
   const [style, setStyle] = useState("");
   const [budget, setBudget] = useState("");
   const [objects, setObjects] = useState("");
+  const [lighting, setLighting] = useState("");
+  const [size, setSize] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [paletteLoading, setPaletteLoading] = useState(false);
   const [analysis, setAnalysis] = useState<RoomAnalysis | null>(null);
   const [result, setResult] = useState<DesignResult | null>(null);
+  const [paletteResult, setPaletteResult] = useState<PaletteResult | null>(null);
   const { toast } = useToast();
 
   const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = (reader.result as string).split(",")[1];
-        resolve(base64);
-      };
+      reader.onload = () => resolve((reader.result as string).split(",")[1]);
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
@@ -42,10 +47,8 @@ const Index = () => {
       toast({ title: "No image", description: "Please upload a room photo first.", variant: "destructive" });
       return;
     }
-
     setAnalyzing(true);
     setAnalysis(null);
-
     try {
       const image_base64 = await fileToBase64(imageFile);
       const resp = await fetch(
@@ -59,30 +62,17 @@ const Index = () => {
           body: JSON.stringify({ image_base64 }),
         }
       );
-
       if (!resp.ok) {
         const err = await resp.json();
         throw new Error(err.error || "Image analysis failed");
       }
-
       const data: RoomAnalysis = await resp.json();
       setAnalysis(data);
-
-      // Auto-fill form fields from analysis
-      const matchedRoom = ROOM_TYPES.find(
-        (r) => r.toLowerCase() === data.room_type.toLowerCase()
-      );
+      const matchedRoom = ROOM_TYPES.find((r) => r.toLowerCase() === data.room_type.toLowerCase());
       if (matchedRoom) setRoomType(matchedRoom);
-
-      const matchedStyle = STYLES.find(
-        (s) => data.current_style.toLowerCase().includes(s.toLowerCase())
-      );
+      const matchedStyle = STYLES.find((s) => data.current_style.toLowerCase().includes(s.toLowerCase()));
       if (matchedStyle) setStyle(matchedStyle);
-
-      if (data.objects.length > 0) {
-        setObjects(data.objects.join(", "));
-      }
-
+      if (data.objects.length > 0) setObjects(data.objects.join(", "));
       toast({ title: "Analysis complete", description: "Room details detected and form auto-filled." });
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
@@ -96,18 +86,44 @@ const Index = () => {
       toast({ title: "Missing fields", description: "Please fill in room type, style, and budget.", variant: "destructive" });
       return;
     }
-
     setLoading(true);
     setResult(null);
-
     try {
       let image_base64: string | undefined;
-      if (imageFile) {
-        image_base64 = await fileToBase64(imageFile);
-      }
-
+      if (imageFile) image_base64 = await fileToBase64(imageFile);
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-room`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ room_type: roomType, style, budget, objects: objects || undefined, image_base64 }),
+        }
+      );
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || "Analysis failed");
+      }
+      setResult(await resp.json());
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGetPalette = async () => {
+    if (!roomType || !style) {
+      toast({ title: "Missing fields", description: "Please select room type and style.", variant: "destructive" });
+      return;
+    }
+    setPaletteLoading(true);
+    setPaletteResult(null);
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suggest-palette`,
         {
           method: "POST",
           headers: {
@@ -117,30 +133,26 @@ const Index = () => {
           body: JSON.stringify({
             room_type: roomType,
             style,
-            budget,
-            objects: objects || undefined,
-            image_base64,
+            budget: budget || undefined,
+            lighting: lighting || undefined,
+            size: size || undefined,
           }),
         }
       );
-
       if (!resp.ok) {
         const err = await resp.json();
-        throw new Error(err.error || "Analysis failed");
+        throw new Error(err.error || "Palette suggestion failed");
       }
-
-      const data: DesignResult = await resp.json();
-      setResult(data);
+      setPaletteResult(await resp.json());
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally {
-      setLoading(false);
+      setPaletteLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen gradient-subtle">
-      {/* Header */}
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
           <div className="p-2 rounded-lg gradient-warm">
@@ -154,7 +166,7 @@ const Index = () => {
       </header>
 
       <main className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* Input Form */}
+        {/* Image Upload (shared) */}
         <Card className="shadow-soft border-border/60 animate-fade-in">
           <CardContent className="p-6 space-y-6">
             <ImageUpload
@@ -171,7 +183,6 @@ const Index = () => {
               }}
             />
 
-            {/* Analyze Image button */}
             {imageFile && !analysis && (
               <Button
                 onClick={handleAnalyzeImage}
@@ -180,71 +191,59 @@ const Index = () => {
                 className="w-full h-11 text-sm font-medium border-primary/30 hover:bg-primary/5"
               >
                 {analyzing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Analyzing image...
-                  </>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing image...</>
                 ) : (
-                  <>
-                    <ScanEye className="w-4 h-4" />
-                    Analyze Image First
-                  </>
+                  <><ScanEye className="w-4 h-4" /> Analyze Image First</>
                 )}
               </Button>
             )}
 
-            {/* Analysis results */}
             {analysis && <AnalysisDisplay data={analysis} />}
 
+            {/* Shared inputs: room type, style, budget */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-foreground font-medium">Room Type</Label>
                 <Select value={roomType} onValueChange={setRoomType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select room type" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select room type" /></SelectTrigger>
                   <SelectContent>
-                    {ROOM_TYPES.map((r) => (
-                      <SelectItem key={r} value={r}>{r}</SelectItem>
-                    ))}
+                    {ROOM_TYPES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
                 <Label className="text-foreground font-medium">Design Style</Label>
                 <Select value={style} onValueChange={setStyle}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select style" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
                   <SelectContent>
-                    {STYLES.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
+                    {STYLES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
                 <Label className="text-foreground font-medium">Budget (₹)</Label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 50000"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                />
+                <Input type="number" placeholder="e.g. 50000" value={budget} onChange={(e) => setBudget(e.target.value)} />
               </div>
-
               <div className="space-y-2">
                 <Label className="text-foreground font-medium">Objects in Room</Label>
-                <Input
-                  placeholder="e.g. sofa, table, TV"
-                  value={objects}
-                  onChange={(e) => setObjects(e.target.value)}
-                />
+                <Input placeholder="e.g. sofa, table, TV" value={objects} onChange={(e) => setObjects(e.target.value)} />
               </div>
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Tabs for Design vs Palette */}
+        <Tabs defaultValue="design" className="animate-fade-in">
+          <TabsList className="w-full grid grid-cols-2">
+            <TabsTrigger value="design" className="gap-1.5">
+              <Sparkles className="w-4 h-4" /> Full Design
+            </TabsTrigger>
+            <TabsTrigger value="palette" className="gap-1.5">
+              <Palette className="w-4 h-4" /> Color Palette
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="design" className="mt-4 space-y-6">
             <Button
               onClick={handleGetRecommendations}
               disabled={loading}
@@ -252,22 +251,56 @@ const Index = () => {
               size="lg"
             >
               {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Generating recommendations...
-                </>
+                <><Loader2 className="w-5 h-5 animate-spin" /> Generating recommendations...</>
               ) : (
-                <>
-                  <Sparkles className="w-5 h-5" />
-                  Get Design Recommendations
-                </>
+                <><Sparkles className="w-5 h-5" /> Get Design Recommendations</>
               )}
             </Button>
-          </CardContent>
-        </Card>
+            {result && <ResultsDisplay data={result} />}
+          </TabsContent>
 
-        {/* Results */}
-        {result && <ResultsDisplay data={result} />}
+          <TabsContent value="palette" className="mt-4 space-y-4">
+            {/* Extra palette inputs */}
+            <Card className="shadow-soft border-border/60">
+              <CardContent className="p-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-foreground font-medium">Lighting Condition</Label>
+                    <Select value={lighting} onValueChange={setLighting}>
+                      <SelectTrigger><SelectValue placeholder="Select lighting" /></SelectTrigger>
+                      <SelectContent>
+                        {LIGHTING.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground font-medium">Room Size</Label>
+                    <Select value={size} onValueChange={setSize}>
+                      <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+                      <SelectContent>
+                        {SIZES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button
+              onClick={handleGetPalette}
+              disabled={paletteLoading}
+              className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
+              size="lg"
+            >
+              {paletteLoading ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Generating palette...</>
+              ) : (
+                <><Palette className="w-5 h-5" /> Get Color Palette</>
+              )}
+            </Button>
+            {paletteResult && <PaletteDisplay data={paletteResult} />}
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
