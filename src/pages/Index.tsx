@@ -121,7 +121,7 @@ const Index = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ room_type: roomType, style, budget, objects: objects || undefined, image_base64 }),
+          body: JSON.stringify({ room_type: roomType, style, budget, objects: objects || undefined, image_base64, ...profileContext }),
         }
       );
       if (!resp.ok) {
@@ -158,6 +158,7 @@ const Index = () => {
             budget: budget || undefined,
             lighting: lighting || undefined,
             size: size || undefined,
+            ...profileContext,
           }),
         }
       );
@@ -189,7 +190,7 @@ const Index = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ room_type: roomType, style, budget }),
+          body: JSON.stringify({ room_type: roomType, style, budget, ...profileContext }),
         }
       );
       if (!resp.ok) {
@@ -224,6 +225,7 @@ const Index = () => {
             room_type: roomType,
             objects: objects || undefined,
             dimensions: dimensions || undefined,
+            ...profileContext,
           }),
         }
       );
@@ -264,6 +266,7 @@ const Index = () => {
             image_base64,
             style,
             budget_range: budget || undefined,
+            ...profileContext,
           }),
         }
       );
