@@ -154,6 +154,37 @@ const Index = () => {
     }
   };
 
+  const handleGetFurniture = async () => {
+    if (!roomType || !style || !budget) {
+      toast({ title: "Missing fields", description: "Please fill in room type, style, and budget.", variant: "destructive" });
+      return;
+    }
+    setFurnitureLoading(true);
+    setFurnitureResult(null);
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suggest-furniture`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ room_type: roomType, style, budget }),
+        }
+      );
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || "Furniture suggestion failed");
+      }
+      setFurnitureResult(await resp.json());
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setFurnitureLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen gradient-subtle">
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
@@ -237,12 +268,15 @@ const Index = () => {
 
         {/* Tabs for Design vs Palette */}
         <Tabs defaultValue="design" className="animate-fade-in">
-          <TabsList className="w-full grid grid-cols-2">
+          <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="design" className="gap-1.5">
               <Sparkles className="w-4 h-4" /> Full Design
             </TabsTrigger>
             <TabsTrigger value="palette" className="gap-1.5">
-              <Palette className="w-4 h-4" /> Color Palette
+              <Palette className="w-4 h-4" /> Colors
+            </TabsTrigger>
+            <TabsTrigger value="furniture" className="gap-1.5">
+              <Sofa className="w-4 h-4" /> Furniture
             </TabsTrigger>
           </TabsList>
 
