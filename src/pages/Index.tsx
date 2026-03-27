@@ -337,6 +337,22 @@ const Index = () => {
             </Button>
             {paletteResult && <PaletteDisplay data={paletteResult} />}
           </TabsContent>
+
+          <TabsContent value="furniture" className="mt-4 space-y-4">
+            <Button
+              onClick={handleGetFurniture}
+              disabled={furnitureLoading}
+              className="w-full h-12 text-base font-medium gradient-warm border-0 text-primary-foreground hover:opacity-90 transition-opacity"
+              size="lg"
+            >
+              {furnitureLoading ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Finding furniture...</>
+              ) : (
+                <><Sofa className="w-5 h-5" /> Get Furniture Suggestions</>
+              )}
+            </Button>
+            {furnitureResult && <FurnitureDisplay data={furnitureResult} />}
+          </TabsContent>
         </Tabs>
       </main>
     </div>
