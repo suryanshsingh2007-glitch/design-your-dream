@@ -25,8 +25,11 @@ const priorityColors: Record<string, string> = {
   low: "bg-muted text-muted-foreground border-border",
 };
 
-const getShopLink = (item: string) =>
-  `https://www.amazon.in/s?k=${encodeURIComponent(item + " furniture")}`;
+const shopLinks = (item: string) => [
+  { label: "Amazon", url: `https://www.amazon.in/s?k=${encodeURIComponent(item + " furniture")}` },
+  { label: "Flipkart", url: `https://www.flipkart.com/search?q=${encodeURIComponent(item + " furniture")}` },
+  { label: "Pepperfry", url: `https://www.pepperfry.com/search?q=${encodeURIComponent(item)}` },
+];
 
 const FurnitureDisplay: React.FC<FurnitureDisplayProps> = ({ data }) => {
   const sorted = [...data.furniture].sort((a, b) => {
@@ -74,15 +77,20 @@ const FurnitureDisplay: React.FC<FurnitureDisplayProps> = ({ data }) => {
               </div>
             )}
 
-            <a
-              href={getShopLink(f.item)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors pt-1"
-            >
-              <ExternalLink className="w-3 h-3" />
-              Shop similar on Amazon
-            </a>
+            <div className="flex items-center gap-3 pt-1">
+              <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />
+              {shopLinks(f.item).map((link, idx) => (
+                <a
+                  key={idx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-2 hover:underline"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
           </div>
         ))}
       </CardContent>
