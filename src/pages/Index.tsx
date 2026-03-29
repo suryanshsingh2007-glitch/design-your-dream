@@ -295,8 +295,8 @@ const Index = () => {
               <Home className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-display text-foreground">Interior AI</h1>
-              <p className="text-[11px] text-muted-foreground tracking-wide uppercase">Design · Plan · Redesign</p>
+              <h1 className="text-lg font-display text-foreground">Nestora</h1>
+              <p className="text-[11px] text-muted-foreground tracking-wide uppercase">Your Space, Reimagined</p>
             </div>
           </div>
           <ThemeToggle />
