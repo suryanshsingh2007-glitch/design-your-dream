@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Sparkles, Home, ScanEye, Palette, Sofa, LayoutPanelTop, ImageIcon } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ImageUpload";
 import AnalysisDisplay, { type RoomAnalysis } from "@/components/AnalysisDisplay";
@@ -288,14 +289,17 @@ const Index = () => {
     <div className="min-h-screen gradient-hero">
       {/* Header */}
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="container max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center gap-3">
-          <div className="p-2 rounded-lg gradient-warm shadow-sm">
-            <Home className="w-5 h-5 text-primary-foreground" />
+        <div className="container max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg gradient-warm shadow-sm">
+              <Home className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-lg font-display text-foreground">Interior AI</h1>
+              <p className="text-[11px] text-muted-foreground tracking-wide uppercase">Design · Plan · Redesign</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-display text-foreground">Interior AI</h1>
-            <p className="text-[11px] text-muted-foreground tracking-wide uppercase">Design · Plan · Redesign</p>
-          </div>
+          <ThemeToggle />
         </div>
       </header>
 
