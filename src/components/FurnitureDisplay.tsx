@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sofa, ArrowRightLeft } from "lucide-react";
+import { Sofa, ArrowRightLeft, ExternalLink } from "lucide-react";
 
 export interface FurnitureItem {
   item: string;
@@ -24,6 +24,9 @@ const priorityColors: Record<string, string> = {
   medium: "bg-accent/10 text-accent-foreground border-accent/30",
   low: "bg-muted text-muted-foreground border-border",
 };
+
+const getShopLink = (item: string) =>
+  `https://www.amazon.in/s?k=${encodeURIComponent(item + " furniture")}`;
 
 const FurnitureDisplay: React.FC<FurnitureDisplayProps> = ({ data }) => {
   const sorted = [...data.furniture].sort((a, b) => {
@@ -70,6 +73,16 @@ const FurnitureDisplay: React.FC<FurnitureDisplayProps> = ({ data }) => {
                 </p>
               </div>
             )}
+
+            <a
+              href={getShopLink(f.item)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors pt-1"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Shop similar on Amazon
+            </a>
           </div>
         ))}
       </CardContent>
