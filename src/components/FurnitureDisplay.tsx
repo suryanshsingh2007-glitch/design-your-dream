@@ -28,7 +28,7 @@ const priorityColors: Record<string, string> = {
 const shopLinks = (item: string) => [
   { label: "Amazon", url: `https://www.amazon.in/s?k=${encodeURIComponent(item + " furniture")}` },
   { label: "Flipkart", url: `https://www.flipkart.com/search?q=${encodeURIComponent(item + " furniture")}` },
-  { label: "Pepperfry", url: `https://www.pepperfry.com/search?q=${encodeURIComponent(item)}` },
+  
 ];
 
 const FurnitureDisplay: React.FC<FurnitureDisplayProps> = ({ data }) => {
