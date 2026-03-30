@@ -11,7 +11,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { image_base64, style, budget_range } = await req.json();
+    const { image_base64, style, room_type, budget_range } = await req.json();
 
     if (!image_base64) {
       return new Response(
@@ -23,14 +23,18 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const prompt = `Redesign this room interior in ${style || "modern"} style. Requirements:
-- Create a photorealistic, magazine-quality interior photograph
+    const roomLabel = room_type || "room";
+    const styleLabel = style || "modern";
+    const budgetLabel = budget_range ? `₹${budget_range}` : "mid-range";
+
+    const prompt = `Redesign this ${roomLabel} interior in ${styleLabel} style. Requirements:
+- Create a photorealistic, magazine-quality interior photograph of a ${roomLabel}
 - Maintain the exact same room shape, dimensions, windows, and doors
-- Replace furniture with stylish ${style || "modern"} pieces
-- Apply a cohesive color palette appropriate for ${style || "modern"} design
+- Replace furniture with stylish ${styleLabel} pieces appropriate for a ${roomLabel}
+- Apply a cohesive color palette appropriate for ${styleLabel} ${roomLabel} design
 - Keep realistic proportions and natural lighting
-- Budget level: ${budget_range || "mid-range"}
-- Add appropriate decor, plants, art, and lighting fixtures
+- Budget level: ${budgetLabel} — choose furniture and decor quality accordingly
+- Add appropriate decor, plants, art, and lighting fixtures suited for a ${roomLabel}
 - Make it look like a real professional interior photograph, not a render
 - Maintain the same camera angle and perspective as the original`;
 

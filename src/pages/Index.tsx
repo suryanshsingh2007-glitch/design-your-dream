@@ -266,6 +266,7 @@ const Index = () => {
           body: JSON.stringify({
             image_base64,
             style,
+            room_type: roomType || undefined,
             budget_range: budget || undefined,
             ...profileContext,
           }),
