@@ -247,8 +247,8 @@ const Index = () => {
       toast({ title: "No image", description: "Please upload a room photo to redesign.", variant: "destructive" });
       return;
     }
-    if (!style) {
-      toast({ title: "Missing style", description: "Please select a design style.", variant: "destructive" });
+    if (!style || !roomType) {
+      toast({ title: "Missing fields", description: "Please select a room type and design style.", variant: "destructive" });
       return;
     }
     setRedesignLoading(true);
@@ -534,7 +534,7 @@ const Index = () => {
 
           <TabsContent value="redesign" className="mt-5 space-y-4">
             <p className="text-sm text-muted-foreground">
-              Upload a room photo and select a style to generate a photorealistic redesign.
+              Upload a room photo, select a room type, style, and budget above — then generate a photorealistic redesign.
             </p>
             <Button
               onClick={handleRedesign}
