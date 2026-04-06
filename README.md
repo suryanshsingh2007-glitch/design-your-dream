@@ -1,4 +1,6 @@
-Design your dream main 🏡 Nestora – Your Space, Reimagined
+Design your dream main
+
+🏡 Nestora – Your Space, Reimagined
 
 Nestora is an AI-powered room redesign web application that helps users transform their living spaces effortlessly. By simply uploading a room image and providing a few details, users can receive personalized design recommendations tailored to their preferences, budget, and environment.
 
